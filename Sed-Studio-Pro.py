@@ -2,6 +2,7 @@ import customtkinter as ctk
 import re
 import pyperclip
 from datetime import datetime
+from tkinter import filedialog, messagebox
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
@@ -11,11 +12,11 @@ class SedGui(ctk.CTk):
         super().__init__()
 
         self.title("Ultimate Sed Builder & Sandbox")
-        self.geometry("1300x900")
+        self.geometry("1300x950")
 
-        self.grid_columnconfigure(0, weight=0) # Sidebar
-        self.grid_columnconfigure(1, weight=1) # Main Settings
-        self.grid_columnconfigure(2, weight=1) # Preview
+        self.grid_columnconfigure(0, weight=0) 
+        self.grid_columnconfigure(1, weight=1) 
+        self.grid_columnconfigure(2, weight=1) 
 
         self.history = []
 
@@ -47,7 +48,7 @@ class SedGui(ctk.CTk):
         self.search_entry.pack(pady=10)
         self.replace_entry = ctk.CTkEntry(self.middle_frame, placeholder_text="Replace with", width=350)
         self.replace_entry.pack(pady=10)
-        self.file_entry = ctk.CTkEntry(self.middle_frame, placeholder_text="Filename", width=350)
+        self.file_entry = ctk.CTkEntry(self.middle_frame, placeholder_text="Filename (data.txt)", width=350)
         self.file_entry.pack(pady=10)
         
         self.switch_frame = ctk.CTkFrame(self.middle_frame, fg_color="transparent")
@@ -78,9 +79,16 @@ class SedGui(ctk.CTk):
         # --- BOTTOM PANEL: History ---
         self.history_frame = ctk.CTkFrame(self)
         self.history_frame.grid(row=1, column=1, columnspan=2, padx=10, pady=(0, 20), sticky="nsew")
-        ctk.CTkLabel(self.history_frame, text="Command History", font=("Roboto", 16, "bold")).pack(pady=5)
+        
+        history_header = ctk.CTkFrame(self.history_frame, fg_color="transparent")
+        history_header.pack(fill="x")
+        ctk.CTkLabel(history_header, text="Command History", font=("Roboto", 16, "bold")).pack(side="left", padx=20, pady=5)
+        
+        self.export_button = ctk.CTkButton(history_header, text="Export History (.txt)", command=self.export_history, fg_color="#9b59b6", width=150)
+        self.export_button.pack(side="right", padx=20, pady=5)
+
         self.history_box = ctk.CTkTextbox(self.history_frame, height=150, width=800, font=("Courier New", 12))
-        self.history_box.pack(padx=10, pady=10)
+        self.history_box.pack(padx=10, pady=10, fill="both")
 
     def apply_preset(self, search, replace):
         self.search_entry.delete(0, "end"); self.search_entry.insert(0, search)
@@ -123,8 +131,27 @@ class SedGui(ctk.CTk):
     def add_to_history(self, cmd):
         if not self.history or self.history[-1] != cmd:
             timestamp = datetime.now().strftime("%H:%M:%S")
-            self.history.append(cmd)
+            self.history.append(f"[{timestamp}] {cmd}")
             self.history_box.insert("0.0", f"[{timestamp}] {cmd}\n")
+
+    def export_history(self):
+        if not self.history:
+            messagebox.showwarning("Export", "History is currently empty.")
+            return
+            
+        file_path = filedialog.asksaveasfilename(defaultextension=".txt",
+                                                filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+                                                title="Save Sed History")
+        if file_path:
+            try:
+                with open(file_path, "w") as f:
+                    f.write("--- SED COMMAND HISTORY EXPORT ---\n")
+                    f.write(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+                    for entry in reversed(self.history): # Newest first
+                        f.write(entry + "\n")
+                messagebox.showinfo("Export Success", f"History saved to {file_path}")
+            except Exception as e:
+                messagebox.showerror("Export Error", f"Could not save file: {e}")
 
     def copy_to_clipboard(self):
         cmd = self.cmd_output.get("0.0", "end-1c")
