@@ -1,7 +1,7 @@
 """ Sed Studio Pro
     Author: Heinz Ebensperger
     Date: 23.12.2025
-    
+     
     This Python Script provides a intuitive interface for the Sed streaming editor
 """
 
