@@ -1,4 +1,4 @@
-# 🛠️ Sed Studio: The Ultimate Sed IDE
+# 🛠️ Sed Creator: The Ultimate Sed IDE
 
 Sed Studio is a modern, graphical architect for building, testing, and exporting `sed` (Stream Editor) scripts. Designed for Linux power users and beginners alike, it simplifies complex text transformations through a real-time sandbox and an intuitive multi-command chain logic.
 
